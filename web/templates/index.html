@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thread Library Performance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2><b>Scalable Thread Library Performance</b></h2>
+    
+    <form method="post">
+        <label>Single Thread Time (s):</label>
+        <input type="text" name="single_thread_time" value="{{ single_thread_time }}" readonly>
+
+        <label>Thread Pool Time (s):</label>
+        <input type="text" name="thread_pool_time" value="{{ thread_pool_time }}" readonly> 
+
+        <br><br>
+        <button type="submit">Generate Graph</button>
+    </form>
+
+    <!-- Display Graph Only if Available -->
+    {% if graph_path %}
+        <img src="{{ graph_path }}" alt="Execution Graph">
+    {% endif %}
+
+</div>
+
+</body>
+</html>
