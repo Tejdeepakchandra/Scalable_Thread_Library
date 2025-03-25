@@ -19,11 +19,10 @@ private:
     int max_threads;
     std::vector<std::thread> workers;
     std::mutex mtx;
-    std::counting_semaphore<1000> sem; // Fix: Replace std::binary_semaphore (C++20-only) with counting_semaphore
+    std::counting_semaphore<1000> sem; 
 
     void threadWorker(std::function<void()> task);
 };
-
 // Workload simulation functions
 double single_thread_workload();
 double multi_thread_workload();
