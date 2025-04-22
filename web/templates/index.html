@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thread Library Performance</title>
+    <title>Thread Performance</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-
-<div class="container">
-    <h2><b>Scalable Thread Library Performance</b></h2>
-    
-    <form method="post">
-        <label>Single Thread Time (s):</label>
-        <input type="text" name="single_thread_time" value="{{ single_thread_time }}" readonly>
-
-        <label>Thread Pool Time (s):</label>
-        <input type="text" name="thread_pool_time" value="{{ thread_pool_time }}" readonly> 
-
-        <br><br>
-        <button type="submit">Generate Graph</button>
-    </form>
-
-    <!-- Display Graph Only if Available -->
-    {% if graph_path %}
-        <img src="{{ graph_path }}" alt="Execution Graph">
-    {% endif %}
-
-</div>
-
+    <div class="container">
+        <h1>Scalable Thread Library Performance</h1>
+        <h3>Comparing Single-Threaded vs. Multi-Threaded Execution</h3>
+        <div class="times">
+            <div class="time-box">
+                <h2>Single Thread</h2>
+                <p>{{ single_thread_time }} seconds</p>
+            </div>
+            <div class="time-box">
+                <h2>Thread Pool</h2>
+                <p>{{ thread_pool_time }} seconds</p>
+            </div>
+        </div>
+        <form method="POST">
+            <button type="submit">Run Benchmark & Update Graph</button>
+        </form>
+        <h2>Performance Graph</h2>
+        {% if graph_path %}
+            <img src="{{ url_for('static', filename='execution_graph.png') }}" alt="Performance Graph">
+        {% else %}
+            <p>No graph available. Run the benchmark to generate one.</p>
+        {% endif %}
+    </div>
 </body>
 </html>
