@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 app = Flask(__name__)
 
 # File paths
-FILE_PATH = "../execution_times.txt"  # Assuming it is in the same folder
-GRAPH_PATH = "static/execution_graph.png"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # ~/testinglib/web/
+FILE_PATH = os.path.join(BASE_DIR, "..", "execution_times.txt")  # ~/testinglib/execution_times.txt
+GRAPH_PATH = os.path.join(BASE_DIR, "static", "execution_graph.png")  # ~/testinglib/web/static/execution_graph.png
+BENCHMARK_PATH = os.path.join(BASE_DIR, "..", "thread_benchmark")  # ~/testinglib/thread_benchmark
 
 def read_execution_times():
     single_thread_time = 0.0
@@ -20,43 +22,53 @@ def read_execution_times():
                 if len(times) == 2:
                     single_thread_time = float(times[0])
                     thread_pool_time = float(times[1])
+        else:
+            print(f"❌ File not found: {FILE_PATH}")
     except Exception as e:
-        print("❌ Error reading execution_times.txt:", e)
+        print(f"❌ Error reading {FILE_PATH}: {e}")
 
     return round(single_thread_time, 6), round(thread_pool_time, 6)
 
 def generate_graph(single_thread_time, thread_pool_time):
-    labels = ["Single Thread", "Thread Pool"]
-    times = [single_thread_time, thread_pool_time]
+    try:
+        labels = ["Single Thread", "Thread Pool"]
+        times = [single_thread_time, thread_pool_time]
 
-    plt.figure(figsize=(6, 4))
-    plt.bar(labels, times, color=["blue", "green"])
-    plt.xlabel("Execution Type")
-    plt.ylabel("Execution Time (s)")
-    plt.title("Thread Execution Performance")
-    plt.savefig(GRAPH_PATH)
-    plt.close()
+        plt.figure(figsize=(6, 4))
+        plt.bar(labels, times, color=["#3498db", "#2ecc71"])
+        plt.xlabel("Execution Type")
+        plt.ylabel("Time (seconds)")
+        plt.title("Thread Performance Comparison")
+        plt.tight_layout()
+        plt.savefig(GRAPH_PATH)
+        plt.close()
+        print(f"✅ Graph saved to {GRAPH_PATH}")
+    except Exception as e:
+        print(f"❌ Failed to generate graph: {e}")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     single_thread_time, thread_pool_time = read_execution_times()
-    graph_available = False  # Initially, no graph
+    graph_available = os.path.exists(GRAPH_PATH)
 
     if request.method == "POST":
         print("🔄 Running thread_benchmark...")
-        os.system("./thread_benchmark")  # Run benchmark from correct location
+        result = os.system(BENCHMARK_PATH)
+        
+        if result == 0:
+            time.sleep(1)
+            single_thread_time, thread_pool_time = read_execution_times()
+            generate_graph(single_thread_time, thread_pool_time)
+            graph_available = True
+        else:
+            print("❌ Benchmark failed to run—check if thread_benchmark exists and is executable.")
 
-        # Wait for execution to complete
-        time.sleep(1)
-
-        single_thread_time, thread_pool_time = read_execution_times()
-        generate_graph(single_thread_time, thread_pool_time)  # Generate graph
-        graph_available = True  # Now the graph is available
-
+    graph_rel_path = "static/execution_graph.png" if graph_available else None
+    
     return render_template("index.html", 
-                           single_thread_time=str(single_thread_time), 
-                           thread_pool_time=str(thread_pool_time),
-                           graph_path=GRAPH_PATH if graph_available else None)  # Only show graph if available
+                          single_thread_time=single_thread_time,
+                          thread_pool_time=thread_pool_time,
+                          graph_path=graph_rel_path)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
